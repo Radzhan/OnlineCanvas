@@ -21,7 +21,7 @@ function App() {
 				const object = {
 					x: e.clientX,
 					y: e.clientY,
-				}
+				};
 
 				if (!ws.current) return;
 
@@ -29,7 +29,6 @@ function App() {
 					type: 'SEND_IMAGE',
 					payload: object,
 				}));
-
 			}
 		});
 		canv.width = window.innerWidth;

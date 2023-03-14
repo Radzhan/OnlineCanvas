@@ -11,25 +11,42 @@ app.use(cors());
 const router = express.Router();
 
 const activeConnections: ActiveConnections = {};
+let array: IncomingImage[] = [];
 
-router.ws('/dask',  (ws, req) => {
+router.ws('/dask', (ws) => {
 	const id = crypto.randomUUID();
 	activeConnections[id] = ws;
 
+	Object.keys(activeConnections).forEach((connId) => {
+		const conn = activeConnections[connId];
+		for (let i = 0; i < array.length; i++) {
+			conn.send(JSON.stringify(array[i]));
+		}
+	})
+
 	ws.on('message', (msg) => {
+
 		const decodedMessage = JSON.parse(msg.toString()) as IncomingImage;
 
 		switch (decodedMessage.type) {
 			case 'SEND_IMAGE':
 				Object.keys(activeConnections).forEach(connId => {
-					const conn = activeConnections[connId];
-					conn.send(JSON.stringify({
+					const object = JSON.stringify({
 						type: 'NEW_IMAGE',
 						payload: {
 							x: decodedMessage.payload.x,
 							y: decodedMessage.payload.y,
 						}
-					}));
+					})
+					const conn = activeConnections[connId];
+					conn.send(object);
+					array.push({
+						type: 'NEW_IMAGE',
+						payload: {
+							x: decodedMessage.payload.x,
+							y: decodedMessage.payload.y,
+						}
+					})
 				});
 				break;
 			default:
